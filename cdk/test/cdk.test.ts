@@ -10,6 +10,7 @@ import {
 import { BedrockCustomBotStack } from "../lib/bedrock-custom-bot-stack";
 import { BedrockRegionResourcesStack } from "../lib/bedrock-region-resources";
 import { Analyzer } from "@cdklabs/generative-ai-cdk-constructs/lib/cdk-lib/opensearch-vectorindex";
+import { Match } from "aws-cdk-lib/assertions";
 
 describe("Bedrock Chat Stack Test", () => {
   test("Identity Provider Generation", () => {
@@ -197,6 +198,86 @@ describe("Bedrock Chat Stack Test", () => {
       environment: {
         VITE_APP_ENABLE_MISTRAL: "false",
       },
+    });
+  });
+
+  test("custom domain configuration", () => {
+    const app = new cdk.App();
+    
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
+
+    const customDomainStack = new BedrockChatStack(app, "CustomDomainStack", {
+      env: {
+        region: "us-east-1",
+      },
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
+      enableMistral: false,
+      selfSignUpEnabled: true,
+      enableIpV6: true,
+      documentBucket: bedrockRegionResourcesStack.documentBucket,
+      useStandbyReplicas: false,
+      enableBedrockCrossRegionInference: false,
+      enableLambdaSnapStart: true,
+      alternateDomainName: "chat.example.com",
+      hostedZoneId: "Z0123456789ABCDEF",
+    });
+
+    const template = Template.fromStack(customDomainStack);
+
+    // Verify CloudFront distribution has alternate domain name
+    template.hasResourceProperties("AWS::CloudFront::Distribution", {
+      DistributionConfig: {
+        Aliases: ["chat.example.com"],
+      },
+    });
+
+    // Verify Route53 record is created
+    template.hasResourceProperties("AWS::Route53::RecordSet", {
+      Name: "chat.example.com.",
+      Type: "A",
+      AliasTarget: {
+        DNSName: {
+          "Fn::GetAtt": [
+            Match.anyValue(),
+            "DomainName"
+          ]
+        },
+        HostedZoneId: Match.anyValue(),
+      },
+      HostedZoneId: "Z0123456789ABCDEF",
+    });
+
+    // Verify AAAA record for IPv6
+    template.hasResourceProperties("AWS::Route53::RecordSet", {
+      Name: "chat.example.com.",
+      Type: "AAAA",
+      AliasTarget: {
+        DNSName: {
+          "Fn::GetAtt": [
+            Match.anyValue(),
+            "DomainName"
+          ]
+        },
+        HostedZoneId: Match.anyValue(),
+      },
+      HostedZoneId: "Z0123456789ABCDEF",
     });
   });
 });
