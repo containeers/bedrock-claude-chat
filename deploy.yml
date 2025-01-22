@@ -168,6 +168,7 @@ Resources:
                   "sed -i \"s/\\\"bedrockRegion\\\": \\\"[^\\\"]*\\\"/\\\"bedrockRegion\\\": \\\"${BEDROCK_REGION}\\\"/\" cdk/cdk.json",
                   "echo \"$CDK_JSON_OVERRIDE\" | jq '.' && jq --argjson override \"$CDK_JSON_OVERRIDE\" '. * $override' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json",
                   "cd cdk",
+                  "cat cdk.json",
                   "npm ci",
                   "npx cdk bootstrap",
                   "npx cdk deploy --require-approval never --all"
