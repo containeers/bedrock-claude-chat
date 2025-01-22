@@ -280,6 +280,60 @@ describe("Bedrock Chat Stack Test", () => {
       HostedZoneId: "Z0123456789ABCDEF",
     });
   });
+
+  test("no custom domain configuration", () => {
+    const app = new cdk.App();
+    
+    const bedrockRegionResourcesStack = new BedrockRegionResourcesStack(
+      app,
+      "BedrockRegionResourcesStack",
+      {
+        env: {
+          region: "us-east-1",
+        },
+        crossRegionReferences: true,
+      }
+    );
+
+    const noDomainStack = new BedrockChatStack(app, "NoDomainStack", {
+      env: {
+        region: "us-east-1",
+      },
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
+      enableMistral: false,
+      selfSignUpEnabled: true,
+      enableIpV6: true,
+      documentBucket: bedrockRegionResourcesStack.documentBucket,
+      useStandbyReplicas: false,
+      enableBedrockCrossRegionInference: false,
+      enableLambdaSnapStart: true,
+      alternateDomainName: "",
+      hostedZoneId: "",
+    });
+
+    const template = Template.fromStack(noDomainStack);
+
+    // Verify no Route53 records are created
+    template.resourceCountIs("AWS::Route53::RecordSet", 0);
+    
+    // Verify no ACM certificate is created
+    template.resourceCountIs("AWS::CertificateManager::Certificate", 0);
+
+    // Verify CloudFront distribution has no aliases
+    template.hasResourceProperties("AWS::CloudFront::Distribution", {
+      DistributionConfig: {
+        Aliases: Match.absent(),
+      },
+    });
+  });
 });
 
 describe("Bedrock Knowledge Base Stack", () => {
