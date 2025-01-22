@@ -99,6 +99,35 @@ You can specify the following parameters during deployment to enhance security a
 - **--allowed-signup-email-domains**: Comma-separated list of allowed email domains for sign-up. (default: no domain restriction)
 - **--bedrock-region**: Define the region where bedrock is available. (default: us-east-1)
 - **--version**: The version of Bedrock Claude Chat to deploy. (default: latest version in development)
+- **--cdk-json-override**: You can override any CDK context values during deployment using the parameter. This allows you to modify configuration without editing the cdk.json file directly.
+
+Example usage:
+
+```bash
+./bin.sh --cdk-json-override '{
+  "context": {
+    "selfSignUpEnabled": false,
+    "enableLambdaSnapStart": true,
+    "allowedIpV4AddressRanges": ["192.168.1.0/24"],
+    "allowedSignUpEmailDomains": ["example.com"]
+  }
+}'
+```
+
+The override JSON must follow the same structure as cdk.json. You can override any context values including:
+
+- `selfSignUpEnabled`
+- `enableLambdaSnapStart` 
+- `allowedIpV4AddressRanges`
+- `allowedIpV6AddressRanges`
+- `allowedSignUpEmailDomains`
+- `bedrockRegion`
+- `enableRagReplicas`
+- `enableBedrockCrossRegionInference`
+- And other context values defined in cdk.json
+
+> [!Note]
+> The override values will be merged with the existing cdk.json configuration during the deployment time in the AWS code build. Values specified in the override will take precedence over the values in cdk.json.
 
 #### Example command with parameters:
 
