@@ -98,8 +98,9 @@ You can specify the following parameters during deployment to enhance security a
 - **--disable-ipv6**: Disable connections over IPv6. (default: enabled)
 - **--allowed-signup-email-domains**: Comma-separated list of allowed email domains for sign-up. (default: no domain restriction)
 - **--bedrock-region**: Define the region where bedrock is available. (default: us-east-1)
+- **--repo-url**: The custom repo of Bedrock Claude Chat to deploy, if forked or custom source control. (default: https://github.com/aws-samples/bedrock-claude-chat.git)
 - **--version**: The version of Bedrock Claude Chat to deploy. (default: latest version in development)
-- **--cdk-json-override**: You can override any CDK context values during deployment using the parameter. This allows you to modify configuration without editing the cdk.json file directly.
+- **--cdk-json-override**: You can override any CDK context values during deployment using the override JSON block. This allows you to modify the configuration without editing the cdk.json file directly.
 
 Example usage:
 
